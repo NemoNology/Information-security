@@ -1,2 +1,2 @@
-# IS
-Information Security - Защита информации - 7-ой семестр
+# Information Security - Защита информации
+## VII semester - 7-ой семестр
