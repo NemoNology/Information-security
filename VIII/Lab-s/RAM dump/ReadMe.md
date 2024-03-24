@@ -177,10 +177,13 @@
 
 8) ### Определить какую хэш-сумму ( SHA1 ) имеет дамп зараженного процесса?
 
-    Для получения дампа процесса можно использовать плагин `dumpfiles`;
-    <!-- TODO: добавить ссылку на документацию модуля -->
+    Для получения дампа процесса можно использовать плагин [`dumpfiles`](https://volatility3.readthedocs.io/en/stable/volatility3.plugins.windows.dumpfiles.html#volatility3.plugins.windows.dumpfiles.DumpFiles);
 
-    `python3 vol.py -f Workstation.mem windows.dumpfiles --pid 3496 | grep UWkpjFjDzM.exe`
+    > DumpFiles
+    >
+    > Dumps cached file contents from Windows memory samples.
+
+    Результат выполнения команды `python3 vol.py -f Workstation.mem windows.dumpfiles --pid 3496 | grep UWkpjFjDzM.exe`:
 
     ```cmd
     Cache   FileObject  FileName    Result
@@ -193,23 +196,67 @@
 
 9) ### На основе данных о заражённом процессе, можно ли узнать учетную запись потенциального злоумышленника?
 
-    Ответ: ``;
+    Учётная запись - некоторая информация, хранимая в компьютерной системе, позволяющая опознать определённого пользователя.
+
+    Что нам известно о вредоносном процессе? - PID, IP-адрес и порт, на котором процесс обменививался данными с рабочей станцией.
+
+    Также известно, что предполагаемое имя учетной записи жертвы - `Bob`, в связи с тем, что вредоносный процесс был запущен из директории `C:\Users\Bob\...`.
+
+    ...
+
+    *Одним из альтернативных вариантов нахождения ответа, без использования `volatility`, является основанное на формулировке следующего вопроса предположение: "Т.к. в следующем вопросе необходимо узнать LM-хэш учётной записи злоумышленника, следовательно учётную запись потенциального злоумышленника можно узнать на основе данных о заражённом процессе".*
+
+    Ответ: `Да`;
 
 10) ### Каков LM-хэш учетной записи злоумышленника?
+
+    ...
 
     Ответ: ``;
 
 11) ### Определить константы защиты памяти блока VAD по адресу 0xfffffa800577ba10?
 
-    Ответ: ``;
+    Для ответа на данный вопрос, можно использовать плагин [`vadinfo`](https://volatility3.readthedocs.io/en/stable/volatility3.plugins.windows.vadinfo.html);
+
+    Результат выполнения команды `py volatility3/vol.py -f dump/dump.mem windows.vadinfo | grep -i "0xfffffa800577ba10"`:
+
+    ```cmd
+    PID     Process Offset  Start VPN       End VPN Tag     Protection      CommitCharge    PrivateMemory   Parent  File    File output
+
+    820     gresssvchost.exe     0xfffffa800577ba10ng fin0x30000 0x33fff Vad     PAGE_READONLY   0       0       0xfa800577c8e0  N/A     Disabled
+    ...
+    ```
+
+    Ответ: `PAGE_READONLY`;
 
 12) ### Определить защиту памяти для блока VAD, со следующей адресацией: начало – 0x00000000033c0000 и конец – 0x00000000033dffff
 
-    Ответ: ``;
+    Для решения используем тот же плагин `vadinfo`.
+
+    Результат выполнения команды `py volatility3/vol.py -f dump/dump.mem windows.vadinfo | grep -i "33c0000(.+)33dffff"`:
+
+    ```cmd
+    PID     Process Offset  Start VPN       End VPN Tag     Protection      CommitCharge    PrivateMemory   Parent  File    File output
+
+    1136    OfficeClickToR  0xfffffa80052652b0  0x33c0000 0x33dffff VadS PAGE_NOACCESS 32 1 0xfa8003d378a0 N/A Disabled
+    ```
+
+    Ответ: `PAGE_NOACCESS`;
 
 13) ### Какое имя имеет VBS скрипт, запущенный на хосте?
 
-    Ответ: ``;
+    Для решения используем плагин`cmdline`.
+
+    Результат выполнения команды `py volatility3/vol.py -f dump/dump.mem cmdline`:
+
+    ```cmd
+    PID Process Args
+    ...
+    5116 wscript.exe "C:\Windows\System32\wscript.exe" //B //NOLOGO %TEMP%\vhjReUDEuumrX.vbs
+    ...
+    ```
+
+    Ответ: `vhjReUDEuumrX`;
 
 14) ### Приложение было запущено 8 марта 2019 года в 02:06:58 (GMT +3). Как называется программа?
 
@@ -217,7 +264,7 @@
 
 15) ### Что было написано в блокноте в момент снятия дампа памяти? Требуется добраться до флага
 
-    Ответ: ``;
+    Ответ: ``;  
 
 16) ### Определить какой файл расположен по адресу с номером записи 59045?
 
